@@ -1,0 +1,3 @@
+CREATE USER stefano;
+CREATE DATABASE backend;
+GRANT ALL PRIVILEGES ON DATABASE backend TO stefano;

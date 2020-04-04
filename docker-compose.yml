@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  backend_db:
+    build: ./BMAT_test/data/
+    restart: always
+    ports:
+      - "8011:5432"
+    volumes:
+      - ./BMAT_test/data/postgres-data:/var/lib/postgresql/data
+ 
+  backend:
+    build: ./BMAT_test/
+    ports: 
+      - "8080:8000"
+    # command: python manage.py runserver 0.0.0.0:8000
+    volumes: 
+      - ./BMAT_test/:/app/src/
+    depends_on: 
+      - backend_db
+    restart: unless-stopped
+
+    stdin_open: true
+    tty: true 
+
