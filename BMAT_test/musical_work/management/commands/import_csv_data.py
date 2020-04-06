@@ -10,7 +10,10 @@ from musical_work.models import MusicalWork
 
 
 class Command(BaseCommand):
-    help = "Import data from a CSV file."
+    help = "Import data from a CSV file." \
+           "" \
+           "Arguments:" \
+           "- url: the URL of the CSV resource file"
 
     elements_to_be_checked_as_last = []
     errors_while_inserting = []
@@ -23,23 +26,27 @@ class Command(BaseCommand):
         url = kwargs.get("url")[0]
 
         with requests.Session() as s:
+
+            if "localhost:8080" in url:
+                url = url.replace("localhost:8080", "backend:8000")
+
             csv_file = s.get(url)
             decoded_content = csv_file.content.decode('utf-8')
             reader = csv.reader(decoded_content.splitlines(), delimiter=',')
             data = list(reader)
 
             for record in data[1:]:
-                self._create_or_update_musicalwork(record)
+                self.__create_or_update_musicalwork(record)
 
             for row in self.elements_to_be_checked_as_last:
-                self._create_or_update_musicalwork(row, last_check=True)
+                self.__create_or_update_musicalwork(row, last_check=True)
 
             if self.errors_while_inserting:
                 print("\033[91mFailed to insert some elements:\033[0m")
                 for error in self.errors_while_inserting:
                     print("\033[93m{}\033[0m".format(str(error)))
 
-    def _create_or_update_musicalwork(self, row, last_check=False):
+    def __create_or_update_musicalwork(self, row, last_check=False):
         title = row[0]
         contributors = row[1]
         iswc = row[2]
@@ -50,15 +57,14 @@ class Command(BaseCommand):
         else:
             instance = MusicalWork.objects.filter(title=title)
             if not instance.exists():
-                if last_check:
+                if last_check:  # called when processing elements in self.elements_to_be_checked_as_last
                     row.append("ERROR details: IWSC not provided and record with title '{}' not found".format(title))
                     self.errors_while_inserting.append(row)
                     return
                 self.elements_to_be_checked_as_last.append(row)
                 return
-
-        if not isinstance(instance, MusicalWork):
             instance = instance.first()
+            
         if created:
             self._add_title(instance, title)
 
@@ -72,25 +78,25 @@ class Command(BaseCommand):
         # Remove accents
         return unidecode.unidecode(word)
 
-    def __add_or_updated_contributors(self, instance, contributors):
+    def __add_or_updated_contributors(self, instance, new_contributors):
 
-        contributors = self.__normalize_word(contributors, title_style=True)
+        new_contributors = self.__normalize_word(new_contributors, title_style=True)
 
         if instance.contributors:
 
             instance_contributors_list = instance.contributors.split("|")
-            row_contributor_list = contributors.split("|")
+            row_contributor_list = new_contributors.split("|")
 
             intance_contributors_metaphones = [doublemetaphone(contrib) for contrib in instance_contributors_list]
 
             for row_contributor in row_contributor_list:
 
                 row_contributor_metaphone = doublemetaphone(row_contributor)
-                if not self._metaphones_match(row_contributor_metaphone, intance_contributors_metaphones):
+                if not self.__words_match(row_contributor_metaphone, intance_contributors_metaphones):
                     instance.contributors = instance.contributors + "|" + row_contributor
 
         else:
-            instance.contributors = contributors
+            instance.contributors = new_contributors
 
         instance.save()
 
@@ -103,13 +109,17 @@ class Command(BaseCommand):
 
             instance.save()
 
-    def _metaphones_match(self, contributor_metaphone, instance_contributors_metaphones):
-
-        # if "" in contributor_metaphone:
+    def __words_match(self, contributor_metaphone, instance_contributors_metaphones):
+        """
+        Check if a contributor metaphone given as input matches one of the contributor metaphone already existing
+        in a given instance, based on 2 methods:
+        1) metaphone: phonetic similarity of words (https://pypi.org/project/Metaphone)
+        2) SequenceMatcher: sequence comparison (chooses threshold 70%)        
+        """
 
         for instance_contributor_metaphone in instance_contributors_metaphones:
 
-            if (contributor_metaphone[1] == instance_contributor_metaphone[1] or \
+            if (contributor_metaphone[1] == instance_contributor_metaphone[1] or
                 SequenceMatcher(None, contributor_metaphone[1], instance_contributor_metaphone[1]).ratio() >= 0.7) and \
                     contributor_metaphone[1] != "":
                 return True
@@ -117,12 +127,13 @@ class Command(BaseCommand):
             if (contributor_metaphone[0] == instance_contributor_metaphone[1] or
                 SequenceMatcher(None, contributor_metaphone[0], instance_contributor_metaphone[1]).ratio() >= 0.7) and \
                     contributor_metaphone[0] != "" or \
-                (contributor_metaphone[1] == instance_contributor_metaphone[0] or \
-                SequenceMatcher(None, contributor_metaphone[1], instance_contributor_metaphone[0]).ratio() >= 0.7) and \
+                    (contributor_metaphone[1] == instance_contributor_metaphone[0] or
+                     SequenceMatcher(None, contributor_metaphone[1],
+                                     instance_contributor_metaphone[0]).ratio() >= 0.7) and \
                     contributor_metaphone[1] != "":
                 return True
             else:
-                if (contributor_metaphone[0] == instance_contributor_metaphone[0] or \
+                if (contributor_metaphone[0] == instance_contributor_metaphone[0] or
                     SequenceMatcher(None, contributor_metaphone[0],
                                     instance_contributor_metaphone[0]).ratio() >= 0.7) and \
                         contributor_metaphone[0] != "":

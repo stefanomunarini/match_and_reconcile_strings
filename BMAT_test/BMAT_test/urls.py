@@ -16,16 +16,21 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework import routers
 
-from musical_work.views import MusicalWorkViewSet
+from musical_work.views import export_csv_report_view, import_csv_report_view, MusicalWorkViewSet
+
 
 router = routers.DefaultRouter()
-router.register(r'v1/musicalwork', MusicalWorkViewSet)
+router.register(r"v1/musicalwork", MusicalWorkViewSet)
 
 urlpatterns = [
     url(r"", include(router.urls)),
-    path('admin/', admin.site.urls),
-    url(r'^api-auth/', include('rest_framework.urls')),
+    path("admin/", admin.site.urls),
+    url(r"^api-auth/", include('rest_framework.urls')),
+    url(r"^v1/export_csv_report/+", export_csv_report_view),
+    url(r"^v1/import_csv_report_view/+", csrf_exempt(import_csv_report_view)),
+
 ]

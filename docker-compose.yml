@@ -4,8 +4,8 @@ services:
   backend_db:
     build: ./BMAT_test/data/
     restart: always
-    ports:
-      - "8011:5432"
+#    ports:
+#      - "8012:5432"
     volumes:
       - ./BMAT_test/data/postgres-data:/var/lib/postgresql/data
  
