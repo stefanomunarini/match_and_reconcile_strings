@@ -3,6 +3,8 @@
 
 docker-compose up -d
 
+Wait a few seconds then visit http://localhost:8080
+
 **Aim**
 
 The aim of this project is to enable actors to: import csv data into the system; retrieve information about musical works through their ISWC codes; export enriched data to CSV files.
