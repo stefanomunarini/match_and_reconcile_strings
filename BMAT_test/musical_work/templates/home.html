@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Welcome to MusicalWork!</h2>
+    <br>
+    <h3>Part 1:</h3>
+    <p>The matching and reconciliation script can be found under /musical_work/management/commands/import_csv_data.py</p>
+    <p>This management command requires as parameter a link to a remote CSV file.</p>
+    <p>E.g. <b>python manage.py import_csv_data http://localhost:8080/static/works_metadata.csv</b></p>
+    <p>If the Docker container is up and running, this command can be invoked from your host with the following syntax:</p>
+    <p><b>docker-compose run backend python3 manage.py import_csv_data http://localhost:8080/static/works_metadata.csv</b></p>
+    <br>
+    <h3>Part 2</h3>
+    <p>See the list of Musical Works <a href="{% url 'musicalwork:musicalwork-list' %}">here</a></p>
+    <p>You can also access a single Musical Work metadata at <b>http://localhost:8080/v1/musicalwork/{ISWC}</b></p>
+    <p>Import a CSV file: send a <u>POST</u> request to <b>http://localhost:8080/v1/import_csv_report_view/</b> including in the body a valid CSV file formatted as for works_metadata.csv example</p>
+    <p>Want to retrieve metadata about some Musical Works? Send a <u>GET</u> request to <b>http://localhost:8080/v1/export_csv_report_view/?iswc={VALUE}&iswc={ANOTHER_VALUE}&iswc=...</b> to download a CSV file containing the metadata about all the requested Musical Works</p>
+</body>
+</html>

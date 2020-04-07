@@ -17,17 +17,16 @@ from django.conf.urls import url
 from django.contrib import admin
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
-
-from rest_framework import routers
-
+from django.views.generic import TemplateView
 from musical_work.views import export_csv_report_view, import_csv_report_view, MusicalWorkViewSet
-
+from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r"v1/musicalwork", MusicalWorkViewSet)
 
 urlpatterns = [
-    url(r"", include(router.urls)),
+    url(r"^$", TemplateView.as_view(template_name="home.html")),
+    url(r"", include((router.urls, "musicalwork"), namespace="musicalwork")),
     path("admin/", admin.site.urls),
     url(r"^api-auth/", include('rest_framework.urls')),
     url(r"^v1/export_csv_report/+", export_csv_report_view),
