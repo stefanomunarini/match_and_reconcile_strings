@@ -50,6 +50,7 @@ class Command(BaseCommand):
         title = row[0]
         contributors = row[1]
         iswc = row[2]
+        source = row[3]
 
         created = False
         if iswc:
@@ -69,6 +70,12 @@ class Command(BaseCommand):
             self._add_title(instance, title)
 
         self.__add_or_updated_contributors(instance, contributors)
+
+        if not instance.source:
+            instance.source = source
+        elif source not in instance.source:
+            instance.source = instance.source + "|" + source
+        instance.save()
 
     def __normalize_word(self, word, title_style=False):
         # capitalize first letter of each word

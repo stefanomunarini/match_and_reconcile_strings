@@ -13,13 +13,15 @@ services:
     build: ./BMAT_test/
     ports: 
       - "8080:8000"
-    # command: python manage.py runserver 0.0.0.0:8000
-    volumes: 
+    volumes:
       - ./BMAT_test/:/app/src/
+    command: bash -c "sleep 10;
+      python manage.py makemigrations
+      && python manage.py migrate
+      && python manage.py runserver 0.0.0.0:8000"
     depends_on: 
       - backend_db
     restart: unless-stopped
 
     stdin_open: true
     tty: true 
-
