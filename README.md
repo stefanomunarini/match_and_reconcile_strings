@@ -1,4 +1,9 @@
 # Match and Reconcile
+**Execution Instructions**
+
+docker-compose up -d
+
+**Aim**
 
 The aim of this project is to enable actors to: import csv data into the system; retrieve information about musical works through their ISWC codes; export enriched data to CSV files.
 
